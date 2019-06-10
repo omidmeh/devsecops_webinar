@@ -1,0 +1,30 @@
+---
+language: python
+python: 2.7
+cache: pip
+
+
+services:
+  - docker
+
+matrix:
+  fast_finish: true
+
+before_install:
+  - sudo apt-get install shellcheck
+  - sudo pip install yamllint
+  - git clone https://github.com/IBM/pattern-ci
+
+before_script:
+  - "./pattern-ci/tests/shellcheck-lint.sh"
+  - "./pattern-ci/tests/yaml-lint.sh"
+
+jobs:
+  include:
+    - script: ./tests/test-docker-compose.sh
+    - install: ./pattern-ci/scripts/install-minikube.sh
+      script: ./tests/test-minikube.sh
+    - install:
+        - ./pattern-ci/scripts/install-ibmcloud.sh
+        - ./pattern-ci/scripts/bx-auth.sh
+      script: ./tests/test-kubernetes.sh
